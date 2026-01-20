@@ -3,338 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>키보드 탐험대: 명예의 전당</title>
+    <title>신나는 키보드 놀이터 🎈</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
 
-        :root {
-            --primary: #FFD700;
-            --secondary: #FF6B6B;
-            --accent: #4D96FF;
-            --bg: #2C2C54;
-            --text: #ffffff;
-        }
-
         body {
             font-family: 'Jua', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
+            background-color: #FFF9C4; /* 밝은 노란색 배경 */
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            color: #ff6f00;
+            margin-bottom: 50px;
+            text-shadow: 3px 3px 0px #fff;
+            animation: bounce 2s infinite;
+        }
+
+        .menu-container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 1200px;
+        }
+
+        .card {
+            width: 320px;
+            height: 420px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none; /* 링크 밑줄 제거 */
+            color: #333;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-            user-select: none;
-        }
-
-        #game-container {
-            width: 800px;
-            height: 650px;
-            background: rgba(0, 0, 0, 0.6);
-            border: 5px solid var(--accent);
-            border-radius: 20px;
-            box-shadow: 0 0 20px var(--accent);
+            border: 5px solid transparent;
             position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin: 0;
+            margin-bottom: 10px;
+        }
+
+        .desc {
+            font-size: 1.1rem;
+            color: #777;
+            margin-top: 5px;
+            margin-bottom: 25px;
             text-align: center;
+            padding: 0 20px;
+            line-height: 1.5;
         }
 
-        h1 { font-size: 3rem; margin: 10px 0; color: var(--primary); text-shadow: 2px 2px 0 #000; }
-        h2 { font-size: 2rem; color: #fff; }
-        p.desc { font-size: 1.5rem; line-height: 1.6; margin-bottom: 30px; }
-        
-        .key-display { display: inline-block; background: #eee; color: #333; padding: 10px 20px; border-radius: 8px; border-bottom: 5px solid #999; font-size: 2rem; margin: 0 5px; font-family: monospace; font-weight: bold; }
-        .highlight { color: var(--primary); font-size: 1.8rem; }
-        #input-area { margin-top: auto; margin-bottom: 30px; width: 100%; }
-
-        input[type="text"] {
-            font-family: 'Jua', sans-serif; font-size: 2rem; padding: 15px; width: 60%;
-            border-radius: 50px; border: 3px solid var(--accent); text-align: center; outline: none; background: rgba(255, 255, 255, 0.9);
+        .btn-label {
+            padding: 12px 30px;
+            border-radius: 50px;
+            color: white;
+            font-size: 1.4rem;
+            font-weight: bold;
         }
 
-        #score-board { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; background: var(--secondary); padding: 10px 20px; border-radius: 15px; border: 2px solid #fff; }
+        /* 1. sk1.html 스타일 (초록색 테마) */
+        .card-1 { border-color: #8bc34a; }
+        .card-1:hover { background-color: #f1f8e9; }
+        .card-1 h2 { color: #558b2f; }
+        .btn-1 { background-color: #8bc34a; box-shadow: 0 4px 0 #558b2f; }
 
-        button {
-            font-family: 'Jua', sans-serif; font-size: 1.5rem; padding: 15px 40px; background-color: var(--accent); color: white;
-            border: none; border-radius: 50px; border-bottom: 5px solid #2766c2; cursor: pointer; transition: transform 0.1s; margin-top: 10px;
+        /* 2. sk2.html 스타일 (파란색 테마) */
+        .card-2 { border-color: #2980b9; }
+        .card-2:hover { background-color: #eaf2f8; }
+        .card-2 h2 { color: #2980b9; }
+        .btn-2 { background-color: #2980b9; box-shadow: 0 4px 0 #1a5276; }
+
+        /* 3. game.html 스타일 (보라색/어두운 테마) */
+        .card-3 { border-color: #673AB7; }
+        .card-3:hover { background-color: #ede7f6; }
+        .card-3 h2 { color: #673AB7; }
+        .btn-3 { background-color: #673AB7; box-shadow: 0 4px 0 #4527a0; }
+
+        .footer-note {
+            margin-top: 50px;
+            color: #888;
+            font-size: 1rem;
+            background: rgba(255,255,255,0.5);
+            padding: 10px 20px;
+            border-radius: 20px;
         }
-        button:active { transform: translateY(3px); border-bottom: 2px solid #2766c2; }
 
-        .scene { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; }
-        .active { display: flex; }
-
-        #effect-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; overflow: hidden; }
-
-        .rank-box { background: rgba(255, 255, 255, 0.1); width: 80%; padding: 15px; border-radius: 10px; margin-top: 10px; max-height: 250px; overflow-y: auto; }
-        .rank-item { display: flex; justify-content: space-between; font-size: 1.5rem; border-bottom: 1px dashed rgba(255,255,255,0.3); padding: 5px 0; }
-        .rank-item:nth-child(1) { color: #FFD700; font-weight: bold; }
-        .rank-item:nth-child(2) { color: #C0C0C0; }
-        .rank-item:nth-child(3) { color: #CD7F32; }
-
-        #nickname-form { display: none; flex-direction: column; align-items: center; }
-        #nickname-input { width: 50% !important; font-size: 1.5rem !important; margin-bottom: 10px; }
-
-        .particle { position: absolute; width: 10px; height: 10px; border-radius: 50%; }
-        .bomb-emoji { position: absolute; font-size: 5rem; animation: fadeOut 1s forwards; }
-        .shake { animation: shake 0.5s; }
-        @keyframes shake { 0% { transform: translate(1px, 1px); } 100% { transform: translate(0, 0); } }
-        @keyframes fadeOut { to { opacity: 0; transform: scale(2); } }
-        
-        .mission-box { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed var(--primary); }
-        .target-word { font-size: 3rem; color: var(--primary); letter-spacing: 2px; }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
     </style>
 </head>
 <body>
 
-<div id="game-container">
-    <div id="score-board">점수: <span id="score">0</span></div>
-    <div id="effect-layer"></div>
+    <h1>🎈 신나는 키보드 놀이터</h1>
 
-    <!-- 0. 시작 화면 -->
-    <div id="scene-intro" class="scene active">
-        <h1>⌨️ 키보드 탐험대</h1>
-        <p class="desc">친구들과 점수 대결을 해보세요!<br>명예의 전당에 이름을 올릴 수 있을까요?</p>
-        <button onclick="window.startGame()">모험 시작하기! 🚀</button>
-        <div style="margin-top:20px; width:100%; display:flex; flex-direction:column; align-items:center;">
-            <h3>🏆 명예의 전당 (Top 5) 🏆</h3>
-            <div id="main-rank-list" class="rank-box"><p>불러오는 중...</p></div>
-        </div>
+    <div class="menu-container">
+        <a href="sk1.html" class="card card-1">
+            <div class="icon">🚀</div>
+            <h2>랜덤 키보드 모험</h2>
+            <p class="desc">
+                단어가 계속 바뀌어요!<br>
+                단계별로 차근차근 연습해봐요.
+            </p>
+            <div class="btn-label btn-1">출발하기 👉</div>
+        </a>
+
+        <a href="sk2.html" class="card card-2">
+            <div class="icon">😺</div>
+            <h2>특수키 완전 정복</h2>
+            <p class="desc">
+                마스코트 고양이와 함께<br>
+                특수키 사용법을 배워요!
+            </p>
+            <div class="btn-label btn-2">배우러 가기 👉</div>
+        </a>
+
+        <a href="game.html" class="card card-3">
+            <div class="icon">🏆</div>
+            <h2>명예의 전당</h2>
+            <p class="desc">
+                친구들과 점수 대결!<br>
+                1등에 도전해보세요.
+            </p>
+            <div class="btn-label btn-3">도전하기 🔥</div>
+        </a>
     </div>
 
-    <!-- 1~5 단계 -->
-    <div id="scene-enter" class="scene">
-        <h2>1단계: Enter (엔터)</h2>
-        <div class="mission-box"><div class="target-word" id="target-enter"></div></div>
-        <div id="input-area"><input type="text" id="input-enter"></div>
+    <div class="footer-note">
+        📢 <b>선생님/부모님 필독:</b> 위 3개의 파일(sk1.html, sk2.html, game.html)이 이 파일과 <b>같은 폴더</b>에 있어야 작동합니다.
     </div>
-    <div id="scene-hanyeong" class="scene">
-        <h2>2단계: 한/영 변환</h2>
-        <div class="mission-box"><div class="target-word" id="target-hanyeong"></div></div>
-        <div id="input-area"><input type="text" id="input-hanyeong"></div>
-    </div>
-    <div id="scene-shift" class="scene">
-        <h2>3단계: Shift (쉬프트)</h2>
-        <div class="mission-box"><div class="target-word" id="target-shift"></div></div>
-        <div id="input-area"><input type="text" id="input-shift"></div>
-    </div>
-    <div id="scene-capslock" class="scene">
-        <h2>4단계: Caps Lock (캡스락)</h2>
-        <div class="mission-box"><div class="target-word" id="target-capslock"></div></div>
-        <div id="input-area"><input type="text" id="input-capslock"></div>
-    </div>
-    <div id="scene-game" class="scene">
-        <h2>🚀 타자왕 챌린지</h2>
-        <div class="mission-box"><div class="target-word" id="game-target"></div></div>
-        <div id="input-area"><input type="text" id="input-game"></div>
-    </div>
-    
-    <!-- 6. 완료 화면 -->
-    <div id="scene-end" class="scene">
-        <h1>탐험 완료! 🏆</h1>
-        <h2 id="final-score">최종 점수: 0점</h2>
-        <div id="nickname-form" style="display:flex;">
-            <p>명예의 전당에 등록할 이름을 입력하세요!</p>
-            <input type="text" id="nickname-input" placeholder="이름 (예: 홍길동)" maxlength="8">
-            <button id="btn-submit-score">점수 등록하기</button>
-        </div>
-        <div id="after-submit" style="display:none;">
-            <h3>🏆 실시간 랭킹 🏆</h3>
-            <div id="end-rank-list" class="rank-box"></div>
-            <button onclick="window.startGame()" style="margin-top:20px;">다시 도전하기</button>
-        </div>
-    </div>
-</div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-
-    // 1. Firebase 설정
-    const firebaseConfig = {
-        apiKey: "AIzaSyCn8lNA17O5lIquNRALl1vjYkGhfy3zfJY",
-        authDomain: "keyboard-game-c5348.firebaseapp.com",
-        projectId: "keyboard-game-c5348",
-        storageBucket: "keyboard-game-c5348.firebasestorage.app",
-        messagingSenderId: "352643831665",
-        appId: "1:352643831665:web:0fafdbd76dde1fb477c8d0"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const scoresCol = collection(db, "scores");
-
-    // 2. 명예의 전당 로딩 함수
-    async function loadLeaderboard(elementId) {
-        const listEl = document.getElementById(elementId);
-        listEl.innerHTML = "<p>불러오는 중...</p>";
-        try {
-            const q = query(scoresCol, orderBy("score", "desc"), limit(5));
-            const querySnapshot = await getDocs(q);
-            listEl.innerHTML = "";
-            if(querySnapshot.empty) {
-                listEl.innerHTML = "<p>아직 등록된 점수가 없어요.</p>";
-                return;
-            }
-            let rank = 1;
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                const div = document.createElement("div");
-                div.className = "rank-item";
-                div.innerHTML = `<span>${rank}. ${data.name}</span> <span>${data.score}점</span>`;
-                listEl.appendChild(div);
-                rank++;
-            });
-        } catch (e) {
-            console.error("Error:", e);
-            listEl.innerHTML = "<p>랭킹을 불러오지 못했어요.</p>";
-        }
-    }
-
-    // 3. 점수 제출 기능
-    document.getElementById("btn-submit-score").addEventListener("click", async () => {
-        const nameInput = document.getElementById("nickname-input");
-        const name = nameInput.value.trim();
-        if(!name) { alert("이름을 입력해주세요!"); return; }
-        
-        const submitBtn = document.getElementById("btn-submit-score");
-        submitBtn.disabled = true;
-        submitBtn.innerText = "등록 중...";
-
-        try {
-            await addDoc(scoresCol, { name: name, score: score, date: new Date() });
-            document.getElementById("nickname-form").style.display = "none";
-            document.getElementById("after-submit").style.display = "block";
-            await loadLeaderboard("end-rank-list");
-        } catch (e) {
-            console.error("Error adding document: ", e);
-            alert("오류가 발생했습니다.");
-            submitBtn.disabled = false;
-        }
-    });
-
-    // 4. 게임 데이터 및 로직
-    const poolEnter = ["시작", "출발", "도전"];
-    const poolHanEng = [{ko:"사과", en:"apple"}, {ko:"하늘", en:"sky"}, {ko:"바다", en:"sea"}];
-    const poolShift = ["우와!", "사랑해!", "토끼", "@@@"];
-    const poolCaps = ["KOREA", "GAME", "COMPUTER"];
-    
-    let score = 0;
-    let activeEnterWord = "";
-    let activeHanEngList = [];
-    let activeShiftList = [];
-    let activeCapsList = [];
-    let activeGameList = [];
-    let idxHy = 0, idxShift = 0, idxCaps = 0, idxGame = 0;
-
-    function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
-    function updateScore(points) { score += points; if(score < 0) score = 0; document.getElementById('score').innerText = score; document.getElementById('final-score').innerText = "최종 점수: " + score + "점"; }
-    function showExplosion() { const c = document.getElementById('game-container'); c.classList.add('shake'); setTimeout(() => c.classList.remove('shake'), 500); }
-    function switchScene(id) {
-        document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        const input = document.getElementById(id).querySelector('input');
-        if (input) { input.value = ''; setTimeout(() => input.focus(), 100); }
-    }
-
-    function prepareWords() {
-        activeEnterWord = poolEnter[Math.floor(Math.random() * poolEnter.length)];
-        let selectedPairs = shuffle([...poolHanEng]).slice(0, 2);
-        activeHanEngList = [];
-        selectedPairs.forEach(p => { activeHanEngList.push({ q: p.ko, a: p.ko }); activeHanEngList.push({ q: p.en, a: p.en }); });
-        activeShiftList = shuffle([...poolShift]).slice(0, 3);
-        activeCapsList = shuffle([...poolCaps]).slice(0, 3);
-        let allWords = [...poolShift, ...poolCaps, ...poolHanEng.map(p=>p.ko), ...poolHanEng.map(p=>p.en)];
-        activeGameList = shuffle(allWords).slice(0, 5);
-    }
-
-    // 5. 단계별 셋업
-    function setupEnterStage() {
-        document.getElementById('target-enter').innerText = activeEnterWord;
-        const input = document.getElementById('input-enter');
-        input.onkeydown = (e) => {
-            if (e.key === 'Enter') {
-                if(input.value === activeEnterWord) { updateScore(10); setTimeout(()=>{ switchScene('scene-hanyeong'); setupHanYeongStage(); }, 500); }
-                else { updateScore(-5); showExplosion(); input.value=''; }
-            }
-        }
-    }
-    function setupHanYeongStage() {
-        idxHy = 0; document.getElementById('target-hanyeong').innerText = activeHanEngList[idxHy].q;
-        const input = document.getElementById('input-hanyeong');
-        input.onkeydown = (e) => {
-            if (e.key === 'Enter') {
-                if(input.value === activeHanEngList[idxHy].a) {
-                    updateScore(10); idxHy++;
-                    if(idxHy >= activeHanEngList.length) { setTimeout(()=>{ switchScene('scene-shift'); setupShiftStage(); }, 500); }
-                    else { document.getElementById('target-hanyeong').innerText = activeHanEngList[idxHy].q; input.value=''; }
-                } else { updateScore(-5); showExplosion(); input.value=''; }
-            }
-        }
-    }
-    function setupShiftStage() {
-        idxShift = 0; document.getElementById('target-shift').innerText = activeShiftList[0];
-        const input = document.getElementById('input-shift');
-        input.onkeydown = (e) => {
-            if (e.key === 'Enter') {
-                if(input.value === activeShiftList[idxShift]) {
-                    updateScore(10); idxShift++;
-                    if(idxShift >= activeShiftList.length) { setTimeout(()=>{ switchScene('scene-capslock'); setupCapsStage(); }, 500); }
-                    else { document.getElementById('target-shift').innerText = activeShiftList[idxShift]; input.value=''; }
-                } else { updateScore(-5); showExplosion(); input.value=''; }
-            }
-        }
-    }
-    function setupCapsStage() {
-        idxCaps = 0; document.getElementById('target-capslock').innerText = activeCapsList[0];
-        const input = document.getElementById('input-capslock');
-        input.onkeydown = (e) => {
-            if (e.key === 'Enter') {
-                if(input.value === activeCapsList[idxCaps]) {
-                    updateScore(10); idxCaps++;
-                    if(idxCaps >= activeCapsList.length) { setTimeout(()=>{ switchScene('scene-game'); setupFinalGame(); }, 500); }
-                    else { document.getElementById('target-capslock').innerText = activeCapsList[idxCaps]; input.value=''; }
-                } else { updateScore(-5); showExplosion(); input.value=''; }
-            }
-        }
-    }
-    function setupFinalGame() {
-        idxGame = 0; document.getElementById('game-target').innerText = activeGameList[0];
-        const input = document.getElementById('input-game');
-        input.onkeydown = (e) => {
-            if (e.key === 'Enter') {
-                if(input.value === activeGameList[idxGame]) {
-                    updateScore(20); idxGame++;
-                    if(idxGame >= activeGameList.length) { setTimeout(()=>{ switchScene('scene-end'); }, 500); }
-                    else { document.getElementById('game-target').innerText = activeGameList[idxGame]; input.value=''; }
-                } else { updateScore(-10); showExplosion(); input.value=''; }
-            }
-        }
-    }
-
-    // 6. [핵심 수정] 함수들을 window에 등록 (밖으로 꺼내기)
-    function startGame() {
-        score = 0; updateScore(0); prepareWords();
-        document.getElementById("nickname-form").style.display = "flex";
-        document.getElementById("nickname-input").value = "";
-        document.getElementById("after-submit").style.display = "none";
-        document.getElementById("btn-submit-score").disabled = false;
-        document.getElementById("btn-submit-score").innerText = "점수 등록하기";
-        switchScene('scene-enter');
-        setupEnterStage();
-    }
-
-    // 전역 객체(window)에 연결하여 HTML 버튼에서 클릭 가능하게 만듦
-    window.startGame = startGame;
-    
-    // 초기 랭킹 로드 실행 (window.loadLeaderboard가 아니라 내부 함수 직접 호출)
-    loadLeaderboard("main-rank-list");
-
-</script>
 </body>
 </html>
