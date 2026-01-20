@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>키보드 대모험: 랜덤 학습 🎲</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+        body {
+            font-family: 'Jua', sans-serif;
+            background-color: #f0f4c3;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            width: 800px;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 진행바 */
+        .progress-container {
+            width: 100%;
+            background-color: #eee;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            height: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #8bc34a;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .stage-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .stage-content.active {
+            display: block;
+        }
+
+        h1 {
+            color: #558b2f;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .key-visual {
+            font-size: 2.5rem;
+            background: #2d3436;
+            color: white;
+            display: inline-block;
+            padding: 15px 30px;
+            border-radius: 15px;
+            box-shadow: 0 6px 0 #000;
+            margin: 20px 0;
+        }
+
+        .instruction {
+            font-size: 1.3rem;
+            background: #dcedc8;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            border: 2px dashed #aed581;
+        }
+
+        .word-box {
+            background-color: #fff;
+            padding: 5px 15px;
+            border-radius: 10px;
+            color: #d84315;
+            font-weight: bold;
+            display: inline-block;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .mission-box {
+            font-size: 1.4rem;
+            color: #e65100;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        textarea {
+            width: 80%;
+            height: 80px;
+            font-size: 1.8rem;
+            font-family: 'Jua', sans-serif;
+            padding: 15px;
+            border: 3px solid #ccc;
+            border-radius: 15px;
+            resize: none;
+            outline: none;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            border-color: #8bc34a;
+        }
+
+        textarea.success {
+            border-color: #2ecc71;
+            background-color: #e8f8f5;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            height: 40px;
+            font-weight: bold;
+        }
+        
+        .feedback.correct { color: #2ecc71; }
+        .feedback.wrong { color: #e74c3c; }
+        .feedback.info { color: #3498db; }
+
+        .next-btn {
+            background-color: #8bc34a;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            font-family: 'Jua', sans-serif;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #558b2f;
+            margin-top: 20px;
+            display: none;
+            animation: bounce 1s infinite;
+        }
+
+        .next-btn:active {
+            transform: translateY(5px);
+            box-shadow: none;
+        }
+
+        .reset-btn {
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 50px;
+            font-family: 'Jua';
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="stage-content active" id="stage0">
+            <h1>🚀 랜덤 키보드 대모험</h1>
+            <p class="instruction">
+                친구들마다 다른 단어가 나와요!<br>
+                화면에 나오는 글자를 잘 보고 따라 써보세요.
+            </p>
+            <button class="next-btn" style="display: inline-block; animation: none;" onclick="startGame()">출발하기! 👉</button>
+        </div>
+
+        <div class="stage-content" id="stage1">
+            <h1>1단계: 지우개 (Backspace)</h1>
+            <div class="key-visual">← Backspace</div>
+            <p class="instruction">
+                글자를 쓰다가 틀리면 지워야 해요.<br>
+                <b>[ <span id="s1-full" class="word-box"></span> ]</b> 라고 썼다가, 뒤를 지워서 <b>[ <span id="s1-part" class="word-box"></span> ]</b> 만 남기세요.
+            </p>
+            <div class="mission-box">🎯 미션: <span id="s1-mission"></span></div>
+            <textarea id="input1"></textarea>
+            <div class="feedback" id="feedback1">시작해볼까요?</div>
+            <button class="next-btn" id="btn1" onclick="nextStage()">다음 단계로! 🌟</button>
+        </div>
+
+        <div class="stage-content" id="stage2">
+            <h1>2단계: 줄바꿈 (Enter)</h1>
+            <div class="key-visual">↵ Enter</div>
+            <p class="instruction">
+                윗줄과 아랫줄을 나눠서 써봐요.
+            </p>
+            <div class="mission-box">🎯 미션: <span id="s2-mission"></span></div>
+            <textarea id="input2"></textarea>
+            <div class="feedback" id="feedback2"></div>
+            <button class="next-btn" id="btn2" onclick="nextStage()">성공! 다음으로! 🚀</button>
+        </div>
+
+        <div class="stage-content" id="stage3">
+            <h1>3단계: 변신 키 (한/영)</h1>
+            <div class="key-visual">한/영</div>
+            <p class="instruction">
+                영어와 한글을 번갈아 가며 써봐요.<br>
+                한/영 키를 눌러서 언어를 바꿔주세요!
+            </p>
+            <div class="mission-box">🎯 미션: <span id="s3-mission"></span></div>
+            <textarea id="input3"></textarea>
+            <div class="feedback" id="feedback3"></div>
+            <button class="next-btn" id="btn3" onclick="nextStage()">잘했어요! 다음! 🇰🇷🇺🇸</button>
+        </div>
+
+        <div class="stage-content" id="stage4">
+            <h1>4단계: Shift ① 한글 쌍자음</h1>
+            <div class="key-visual">⇧ Shift + 한글</div>
+            <p class="instruction">
+                Shift를 <b>누른 채로</b> 입력하면 <b>[ ㅃ, ㅉ, ㄸ, ㄲ, ㅆ ]</b> 이 나와요.
+            </p>
+            <div class="mission-box">🎯 미션: <span id="s4-mission"></span></div>
+            <textarea id="input4"></textarea>
+            <div class="feedback" id="feedback4"></div>
+            <button class="next-btn" id="btn4" onclick="nextStage()">멋져요! 다음! ✨</button>
+        </div>
+
+        <div class="stage-content" id="stage5">
+            <h1>5단계: Shift ② 영어 대문자</h1>
+            <div class="key-visual">⇧ Shift + 영어</div>
+            <p class="instruction">
+                영어의 <b>첫 글자만 대문자</b>로 써보세요.<br>
+                Shift를 누른 채로 첫 글자를 치면 돼요!
+            </p>
+            <div class="mission-box">🎯 미션: <span id="s5-mission"></span></div>
+            <textarea id="input5"></textarea>
+            <div class="feedback" id="feedback5"></div>
+            <button class="next-btn" id="btn5" onclick="nextStage()">잘했어요! 다음! 🔠</button>
+        </div>
+
+        <div class="stage-content" id="stage6">
+            <h1>6단계: Shift ③ 특수문자</h1>
+            <div class="key-visual">⇧ Shift + 숫자</div>
+            <p class="instruction">
+                숫자 키 위에 있는 <b>기호(!, @, ?)</b>를 써볼까요?<br>
+                Shift를 꾹 누르고 숫자를 눌러보세요.
+            </p>
+            <div class="mission-box">🎯 미션: <span id="s6-mission"></span></div>
+            <textarea id="input6"></textarea>
+            <div class="feedback" id="feedback6"></div>
+            <button class="next-btn" id="btn6" onclick="nextStage()">Shift 정복 완료! 🎉</button>
+        </div>
+
+        <div class="stage-content" id="stage7">
+            <h1>7단계: 대장 키 (Caps Lock)</h1>
+            <div class="key-visual">Caps Lock</div>
+            <p class="instruction">
+                모든 글자를 대문자로 쓰고 싶을 때 사용해요.
+            </p>
+            <div class="mission-box">🎯 미션: <span id="s7-mission"></span></div>
+            <textarea id="input7"></textarea>
+            <div class="feedback" id="feedback7"></div>
+            <button class="next-btn" id="btn7" onclick="nextStage()">마지막 도전으로! 🔥</button>
+        </div>
+
+        <div class="stage-content" id="stage8">
+            <h1>👑 마지막 확인 학습</h1>
+            <p class="instruction">
+                지금까지 배운 내용을 섞어서 연습해봐요!<br>
+                (Shift, 한/영, Enter 모두 사용)
+            </p>
+            <div class="mission-box">🎯 미션:<br><br><span id="s8-mission" class="word-box" style="font-size:1.5rem; background:#eee; color:#333;"></span></div>
+            <textarea id="input8"></textarea>
+            <div class="feedback" id="feedback8"></div>
+            <button class="next-btn" id="btn8" onclick="nextStage()">완료! 축하합니다! 🏆</button>
+        </div>
+
+        <div class="stage-content" id="stage9">
+            <h1 style="font-size: 4rem;">🏆 대단해요!</h1>
+            <p class="instruction">
+                오늘의 키보드 연습 끝!<br>
+                다시 시작하면 <b>새로운 단어</b>가 나와요.
+            </p>
+            <button class="reset-btn" onclick="location.reload()">새로운 문제로 다시 하기</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 🎲 랜덤 단어 데이터베이스 ---
+        const db = {
+            stage1: [
+                {full: "사과", part: "사"}, {full: "가지", part: "가"}, {full: "포도", part: "포"},
+                {full: "나비", part: "나"}, {full: "하마", part: "하"}, {full: "학교", part: "학"}
+            ],
+            stage2: [
+                {top: "하늘", bottom: "바다"}, {top: "엄마", bottom: "아빠"}, 
+                {top: "여름", bottom: "겨울"}, {top: "사자", bottom: "호랑이"}
+            ],
+            stage3: [
+                {en: "mom", ko: "엄마"}, {en: "love", ko: "사랑"}, 
+                {en: "ant", ko: "개미"}, {en: "dog", ko: "강아지"}
+            ],
+            stage4: [
+                "토끼", "코끼리", "짜장면", "뽀뽀", "머리띠", "아빠", "쓰레기통"
+            ],
+            stage5: [
+                "Korea", "Seoul", "Banana", "Apple", "Milk", "Candy"
+            ],
+            stage6: [
+                "안녕!", "사랑해?", "최고!", "정말?", "와우!", "1등!"
+            ],
+            stage7: [
+                "HAPPY", "LION", "TIGER", "GOOD", "HELLO", "PIZZA"
+            ],
+            stage8: [
+                "학교\nGo!", "안녕\nHi!", "친구\nLove", "사랑\nOk!"
+            ]
+        };
+
+        // --- 현재 게임 상태 변수 ---
+        let currentStage = 0; // 0단계(출발하기 화면)부터 시작
+        const totalStages = 9;
+        let currentMission = {};
+
+        // --- 유틸리티 함수: 랜덤 뽑기 ---
+        function pickRandom(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+
+        // --- 게임 시작 (출발하기 버튼 클릭 시 실행) ---
+        function startGame() {
+            // 모든 스테이지 문제 세팅
+            setupStage1();
+            setupStage2();
+            setupStage3();
+            setupStage4();
+            setupStage5();
+            setupStage6();
+            setupStage7();
+            setupStage8();
+
+            // 1단계로 이동 (이때 Stage 0의 내용은 사라짐)
+            nextStage();
+        }
+
+        function updateProgress() {
+            // Stage 1부터 게이지가 차오르도록 설정
+            const percentage = ((currentStage - 1) / (totalStages - 2)) * 100;
+            const width = percentage > 100 ? 100 : (percentage < 0 ? 0 : percentage);
+            document.getElementById('progressBar').style.width = width + '%';
+        }
+
+        function nextStage() {
+            // 현재 스테이지 숨김 (Stage 0에서 호출되면 헤더도 같이 숨겨짐)
+            document.getElementById(`stage${currentStage}`).classList.remove('active');
+            
+            currentStage++;
+            
+            // 다음 스테이지 표시
+            if (currentStage <= totalStages) {
+                const nextStageEl = document.getElementById(`stage${currentStage}`);
+                if (nextStageEl) {
+                    nextStageEl.classList.add('active');
+                    updateProgress();
+                    const nextInput = document.getElementById(`input${currentStage}`);
+                    if (nextInput) {
+                        nextInput.value = '';
+                        nextInput.focus();
+                    }
+                }
+            }
+        }
+
+        // --- 🎯 스테이지별 랜덤 세팅 및 검사 로직 ---
+
+        function setupStage1() {
+            const data = pickRandom(db.stage1);
+            currentMission.s1 = data;
+            
+            document.getElementById('s1-full').innerText = data.full;
+            document.getElementById('s1-part').innerText = data.part;
+            document.getElementById('s1-mission').innerText = `'${data.full}' 입력 후 ➡ 지워서 '${data.part}' 만들기`;
+            document.getElementById('input1').placeholder = `먼저 '${data.full}' 이라고 써보세요.`;
+
+            let hasTypedFull = false;
+            const input = document.getElementById('input1');
+            const feedback = document.getElementById('feedback1');
+            const btn = document.getElementById('btn1');
+
+            input.addEventListener('input', () => {
+                const val = input.value;
+                if (val.includes(data.full)) {
+                    hasTypedFull = true;
+                    feedback.textContent = `딩동댕! 🔔 이제 백스페이스로 '${data.part}'만 남겨보세요.`;
+                    feedback.className = "feedback info";
+                    input.classList.remove('success');
+                    btn.style.display = "none";
+                }
+                
+                if (hasTypedFull && val.trim() === data.part) {
+                    input.classList.add('success');
+                    feedback.textContent = "정답입니다! 지우개 성공! ⭕";
+                    feedback.className = "feedback correct";
+                    btn.style.display = "inline-block";
+                } else if (!hasTypedFull) {
+                    feedback.textContent = `먼저 '${data.full}' 이라고 끝까지 써주세요.`;
+                    feedback.className = "feedback wrong";
+                    btn.style.display = "none";
+                } else if (hasTypedFull && val.trim() !== data.part && !val.includes(data.full)) {
+                    feedback.textContent = `앗, 너무 많이 지웠나요? '${data.part}'만 남겨주세요.`;
+                    feedback.className = "feedback wrong";
+                    btn.style.display = "none";
+                }
+            });
+        }
+
+        function setupStage2() {
+            const data = pickRandom(db.stage2);
+            document.getElementById('s2-mission').innerText = `윗줄: ${data.top} / 아랫줄: ${data.bottom}`;
+            document.getElementById('input2').placeholder = `${data.top} (엔터) ${data.bottom}`;
+            
+            checkMission('input2', 'feedback2', 'btn2', (val) => {
+                return val.includes(data.top) && val.includes(data.bottom) && val.includes('\n');
+            });
+        }
+
+        function setupStage3() {
+            const data = pickRandom(db.stage3);
+            document.getElementById('s3-mission').innerText = `${data.en} ${data.ko}`;
+            document.getElementById('input3').placeholder = `영어(${data.en}) 쓰고 한글(${data.ko})`;
+
+            checkMission('input3', 'feedback3', 'btn3', (val) => {
+                return val.toLowerCase().includes(data.en) && val.includes(data.ko);
+            });
+        }
+
+        function setupStage4() {
+            const word = pickRandom(db.stage4);
+            document.getElementById('s4-mission').innerText = word;
+            document.getElementById('input4').placeholder = `여기에 '${word}' 입력`;
+
+            checkMission('input4', 'feedback4', 'btn4', (val) => val.trim() === word);
+        }
+
+        function setupStage5() {
+            const word = pickRandom(db.stage5);
+            document.getElementById('s5-mission').innerText = word;
+            document.getElementById('input5').placeholder = `Shift 누르고 첫글자만 대문자`;
+
+            checkMission('input5', 'feedback5', 'btn5', (val) => val.trim() === word);
+        }
+
+        function setupStage6() {
+            const word = pickRandom(db.stage6);
+            document.getElementById('s6-mission').innerText = word;
+            document.getElementById('input6').placeholder = word;
+
+            checkMission('input6', 'feedback6', 'btn6', (val) => val.trim() === word);
+        }
+
+        function setupStage7() {
+            const word = pickRandom(db.stage7);
+            document.getElementById('s7-mission').innerText = word;
+            document.getElementById('input7').placeholder = "Caps Lock 켜고 입력";
+
+            checkMission('input7', 'feedback7', 'btn7', (val) => val === word);
+        }
+
+        function setupStage8() {
+            const text = pickRandom(db.stage8);
+            document.getElementById('s8-mission').innerText = text.replace('\n', ' (엔터) ');
+            document.getElementById('input8').placeholder = text.replace('\n', ' (엔터) ');
+
+            checkMission('input8', 'feedback8', 'btn8', (val) => {
+                const parts = text.split('\n');
+                return val.includes(parts[0]) && val.includes(parts[1]) && val.includes('\n');
+            });
+        }
+
+        function checkMission(inputId, feedbackId, btnId, conditionFunc) {
+            const input = document.getElementById(inputId);
+            const feedback = document.getElementById(feedbackId);
+            const btn = document.getElementById(btnId);
+
+            input.addEventListener('input', () => {
+                if (conditionFunc(input.value)) {
+                    input.classList.add('success');
+                    feedback.textContent = "정답입니다! 참 잘했어요! ⭕";
+                    feedback.className = "feedback correct";
+                    btn.style.display = "inline-block";
+                } else {
+                    input.classList.remove('success');
+                    feedback.textContent = "화면에 보이는 글자와 똑같이 입력해보세요. 🤔";
+                    feedback.className = "feedback wrong";
+                    btn.style.display = "none";
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>

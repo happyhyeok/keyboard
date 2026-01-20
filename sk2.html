@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>키보드 탐험대: 특수키 완전 정복</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+        body {
+            font-family: 'Jua', sans-serif;
+            background-color: #E3F2FD;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 900px;
+            height: 700px;
+            background-color: white;
+            border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            padding: 30px;
+            box-sizing: border-box;
+            border: 6px solid #FFC107;
+        }
+
+        /* 공통 스타일 */
+        h1 { font-size: 3.5rem; color: #2c3e50; margin-bottom: 15px; }
+        h2 { color: #E67E22; font-size: 2.5rem; margin-top: 0; }
+        p { font-size: 1.6rem; color: #555; line-height: 1.7; }
+        
+        .key-icon {
+            display: inline-block;
+            padding: 10px 22px;
+            border: 3px solid #555;
+            border-radius: 12px;
+            background-color: #f9f9f9;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: bold;
+            font-size: 1.6rem;
+            box-shadow: 4px 4px 0 #555;
+            margin: 0 8px;
+            color: #333;
+        }
+        .key-enter { width: 120px; }
+
+        .highlight { color: #1ABC9C; font-weight: bold; }
+
+        input[type="text"] {
+            font-family: 'Jua', sans-serif;
+            font-size: 2.2rem;
+            padding: 15px;
+            width: 70%;
+            text-align: center;
+            border: 4px solid #ddd;
+            border-radius: 18px;
+            margin-top: 25px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        input[type="text"]:focus { border-color: #FFC107; box-shadow: 0 0 10px rgba(255, 193, 7, 0.5); }
+
+        .btn {
+            background-color: #FF5722;
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 1.8rem;
+            border-radius: 60px;
+            cursor: pointer;
+            font-family: 'Jua', sans-serif;
+            margin-top: 40px;
+            box-shadow: 0 6px 0 #D84315;
+            transition: transform 0.1s;
+        }
+        .btn:active { transform: translateY(6px); box-shadow: none; }
+
+        /* 화면 전환용 */
+        .screen { display: none; height: 100%; flex-direction: column; justify-content: center; align-items: center; }
+        .active { display: flex; animation: slideUp 0.6s ease-out; }
+
+        /* 애니메이션 */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+        @keyframes success-burst {
+            0% { background-color: rgba(46, 204, 113, 0); }
+            50% { background-color: rgba(46, 204, 113, 0.3); }
+            100% { background-color: rgba(46, 204, 113, 0); }
+        }
+        @keyframes fail-burst {
+            0% { background-color: rgba(231, 76, 60, 0); }
+            50% { background-color: rgba(231, 76, 60, 0.3); }
+            100% { background-color: rgba(231, 76, 60, 0); }
+        }
+
+        .mascot { font-size: 6rem; animation: bounce 2s infinite; margin-bottom: 25px; }
+        .feedback { font-size: 1.4rem; color: red; min-height: 35px; margin-top: 15px; font-weight: bold; }
+        
+        .keyboard-visual {
+            width: 85%;
+            height: 180px;
+            background-color: #ececec;
+            border-radius: 15px;
+            margin: 25px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.4rem;
+            color: #666;
+            border: 2px solid #ccc;
+        }
+
+        /* --- 타자 게임 전용 스타일 --- */
+        #game-score-board {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 2rem;
+            color: #2c3e50;
+            background: #fff;
+            padding: 10px 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        #target-word {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #3498db;
+            margin: 30px 0;
+            letter-spacing: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .shake { animation: shake 0.5s; border-color: #e74c3c !important; }
+        .success-effect { animation: success-burst 0.8s; }
+        .fail-effect { animation: fail-burst 0.8s; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+
+    <div id="screen-intro" class="screen active">
+        <div class="mascot">😺</div>
+        <h1>키보드 탐험대</h1>
+        <p>안녕? 나는 키보드 대장이야!<br>4개의 마법 열쇠를 배우고 마지막 미션에 도전해봐!</p>
+        <p style="font-size: 1.3rem; color: #7f8c8d;">순서: Enter → 한/영 → Shift → Caps Lock → 미션 게임</p>
+        <button class="btn" onclick="nextScreen('screen-stage1')">탐험 시작하기!</button>
+    </div>
+
+    <div id="screen-stage1" class="screen">
+        <h2>1단계: Enter (엔터)</h2>
+        <p>컴퓨터에게 <span class="highlight">"명령 실행!"</span> 이라고 말하거나<br><span class="highlight">"줄을 바꿔줘!"</span> 할 때 쓰는 키야.</p>
+        <div class="keyboard-visual">
+            <span class="key-icon key-enter">Enter ↵</span> ← 이렇게 생긴 키를 찾아봐!
+        </div>
+        <p>아래 상자에 <strong>"출발"</strong>이라고 쓰고<br><span class="key-icon">Enter</span>를 꾹 눌러봐.</p>
+        <input type="text" id="input-enter" placeholder="여기에 '출발' 입력" onkeypress="checkEnterStage(event)">
+        <div id="feedback-enter" class="feedback"></div>
+    </div>
+
+    <div id="screen-stage2" class="screen">
+        <h2>2단계: 한/영 변환</h2>
+        <p>한글과 영어를 <span class="highlight">서로 바꿔주는</span> 마법 키!<br>누를 때마다 한글 ↔ 영어가 바뀌어.</p>
+        <div class="keyboard-visual">
+            <span class="key-icon">한/영</span> 또는 <span class="key-icon" style="font-size: 1.2rem;">alt(오른쪽)</span>
+        </div>
+        <p>먼저 <strong>"사과"</strong>를 쓰고, 키를 눌러 영어로 바꾼 뒤<br><strong>"apple"</strong>을 이어서 써보자.</p>
+        <input type="text" id="input-lang" placeholder="사과apple" onkeyup="checkLangStage()">
+        <div id="feedback-lang" class="feedback"></div>
+    </div>
+
+    <div id="screen-stage3" class="screen">
+        <h2>3단계: Shift (쉬프트)</h2>
+        <p>키 윗쪽에 있는 <span class="highlight">기호(!@#)</span>나 <span class="highlight">쌍자음(ㄲ,ㄸ)</span>을<br>쓸 때 <span style="color:#e74c3c;">계속 누르고</span> 있어야 해.</p>
+        <div class="keyboard-visual">
+            <span class="key-icon">Shift ⇧</span>(누른채로) + <span class="key-icon">1</span> = <strong>!</strong>
+        </div>
+        <p><span class="key-icon">Shift</span>를 누른 상태로 숫자 1을 눌러<br><strong>느낌표(!)</strong>를 5개 만들어봐.</p>
+        <input type="text" id="input-shift" placeholder="!!!!!" onkeyup="checkShiftStage()">
+        <div id="feedback-shift" class="feedback"></div>
+    </div>
+
+    <div id="screen-stage4" class="screen">
+        <h2>4단계: Caps Lock (캡스 락)</h2>
+        <p>영어 <span class="highlight">대문자(큰 글자)</span>만 계속 쓰고 싶을 때!<br>한 번 누르면 불이 켜지고 대문자가 나와.</p>
+        <div class="keyboard-visual">
+            <span class="key-icon">Caps Lock</span> (불이 켜졌는지 확인!)
+        </div>
+        <p><span class="key-icon">Caps Lock</span>을 켜고<br><strong>"HELLO"</strong>라고 크게 써봐.</p>
+        <input type="text" id="input-caps" placeholder="HELLO" onkeyup="checkCapsStage()">
+        <div id="feedback-caps" class="feedback"></div>
+    </div>
+
+    <div id="screen-pre-game" class="screen">
+        <div class="mascot">🎮</div>
+        <h2>최종 미션: 폭탄을 막아라!</h2>
+        <p>배운 키들을 이용해 단어를 정확하게 입력해야 해.<br>틀리면 폭탄이 터져서 점수가 깎여! 😱</p>
+        <p style="font-size: 1.4rem; color: #2980b9;"><strong>성공: +100점 🎉 / 실패: -50점 💥</strong></p>
+        <button class="btn" onclick="startGame()">미션 시작!</button>
+    </div>
+
+    <div id="screen-game" class="screen">
+        <div id="game-score-board">점수: <span id="score">0</span>점</div>
+        <h2>나오는 단어를 입력하고 Enter!</h2>
+        <div id="target-word">준비...</div>
+        <input type="text" id="input-game" placeholder="여기에 입력하세요" onkeypress="checkGameInput(event)" autocomplete="off">
+        <div id="feedback-game" class="feedback"></div>
+    </div>
+
+    <div id="screen-success" class="screen" style="background-color: #fffbe6;">
+        <div class="mascot">🏆</div>
+        <h1>미션 대성공!</h1>
+        <p>와우! 키보드 대장이 될 자격이 충분해!<br>모든 마법 열쇠를 자유자재로 다루는구나!</p>
+        <h2 style="color: #27ae60;">최종 점수: <span id="final-score">0</span>점</h2>
+        <button class="btn" onclick="location.reload()" style="background-color: #27ae60;">다시 도전하기</button>
+    </div>
+
+</div>
+
+<script>
+    // --- 전역 변수 ---
+    let currentScore = 0;
+    let currentWordIndex = 0;
+    
+    // 게임에 사용할 단어 목록 (수정됨: Shift로 입력 가능한 특수문자만 사용)
+    const gameWords = [
+        "안녕", "hello",         // 1. 한/영
+        "바나나", "banana",    // 2. 한/영
+        "최고!", "WOW!",         // 3. Shift+1, Caps Lock
+        "하하하", "HAHAHA",     // 4. Caps Lock
+        "사랑해!!", "I LOVE YOU!!" // 5. 복합 (♥ 대신 Shift+1 사용)
+    ];
+    
+    const container = document.getElementById('game-container');
+
+
+    // --- 화면 전환 및 공통 함수 ---
+    function nextScreen(screenId) {
+        const screens = document.querySelectorAll('.screen');
+        screens.forEach(screen => screen.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        
+        const input = document.getElementById(screenId).querySelector('input');
+        if (input) {
+            input.value = '';
+            input.disabled = false;
+            setTimeout(() => input.focus(), 100);
+        }
+        // 피드백 초기화
+        const feedbacks = document.querySelectorAll('.feedback');
+        feedbacks.forEach(fb => { fb.textContent = ''; fb.style.color = 'red'; });
+    }
+
+    function showFeedback(elementId, message, isSuccess) {
+        const feedback = document.getElementById(elementId);
+        feedback.textContent = message;
+        feedback.style.color = isSuccess ? '#27ae60' : '#c0392b';
+    }
+
+    // --- 각 학습 단계별 로직 ---
+
+    // 1. Enter 키
+    function checkEnterStage(event) {
+        const input = document.getElementById('input-enter');
+        if (event.key === 'Enter') {
+            if (input.value === '출발') {
+                showFeedback('feedback-enter', "정답! Enter는 명령을 내리는 키야!", true);
+                input.disabled = true;
+                setTimeout(() => nextScreen('screen-stage2'), 1500);
+            } else {
+                showFeedback('feedback-enter', "'출발'이라고 정확히 쓰고 Enter를 눌러줘!", false);
+                input.classList.add('shake');
+                setTimeout(() => input.classList.remove('shake'), 500);
+            }
+        }
+    }
+
+    // 2. 한/영 키
+    function checkLangStage() {
+        const input = document.getElementById('input-lang');
+        const val = input.value;
+        if (val === '사과apple') {
+            showFeedback('feedback-lang', "완벽해! 한글과 영어를 자유자재로!", true);
+            input.disabled = true;
+            setTimeout(() => nextScreen('screen-stage3'), 1500);
+            return;
+        }
+        // 힌트
+        if (val === '사과') showFeedback('feedback-lang', "좋아! 이제 '한/영' 키를 누르고 apple을 써봐.", true);
+        else if (val.includes('tkrhk')) showFeedback('feedback-lang', "영어가 나오네? '한/영' 키를 눌러서 한글로 바꿔봐.", false);
+        else if (val.includes('사과ㅁ')) showFeedback('feedback-lang', "한글이 계속 나오네? '한/영' 키를 눌러서 영어로 바꿔봐.", false);
+    }
+
+    // 3. Shift 키
+    function checkShiftStage() {
+        const input = document.getElementById('input-shift');
+        if (input.value === '!!!!!') {
+            showFeedback('feedback-shift', "맞았어! Shift는 꾹 누른 채로 써야 해!", true);
+            input.disabled = true;
+            setTimeout(() => nextScreen('screen-stage4'), 1500);
+        } else if (input.value.includes('1')) {
+             showFeedback('feedback-shift', "숫자 1이 나왔어. Shift 키를 '계속' 누르고 있어봐!", false);
+        }
+    }
+
+    // 4. Caps Lock 키
+    function checkCapsStage() {
+        const input = document.getElementById('input-caps');
+        if (input.value === 'HELLO') {
+            showFeedback('feedback-caps', "멋져! 큰 글자가 아주 잘 보이네!", true);
+            input.disabled = true;
+            setTimeout(() => nextScreen('screen-pre-game'), 1500);
+        } else if (input.value.length > 0 && input.value !== 'HELLO'.substring(0, input.value.length)) {
+            showFeedback('feedback-caps', "Caps Lock을 켜고 대문자로 'HELLO'를 써봐.", false);
+        }
+    }
+
+
+    // --- 타자 게임 로직 ---
+
+    function startGame() {
+        nextScreen('screen-game');
+        currentScore = 0;
+        currentWordIndex = 0;
+        updateScore(0);
+        showNextWord();
+    }
+
+    function showNextWord() {
+        const input = document.getElementById('input-game');
+        const feedback = document.getElementById('feedback-game');
+        input.value = '';
+        input.focus();
+        feedback.textContent = '';
+
+        if (currentWordIndex < gameWords.length) {
+            document.getElementById('target-word').textContent = gameWords[currentWordIndex];
+        } else {
+            // 게임 종료
+            document.getElementById('final-score').textContent = currentScore;
+            nextScreen('screen-success');
+        }
+    }
+
+    function checkGameInput(event) {
+        if (event.key === 'Enter') {
+            const input = document.getElementById('input-game');
+            const target = gameWords[currentWordIndex];
+            const feedback = document.getElementById('feedback-game');
+
+            if (input.value === target) {
+                // 성공 처리
+                updateScore(100);
+                feedback.textContent = "성공! (+100점) 🎉";
+                feedback.style.color = '#27ae60';
+                container.classList.add('success-effect');
+                setTimeout(() => container.classList.remove('success-effect'), 800);
+                currentWordIndex++;
+                setTimeout(showNextWord, 1000);
+            } else {
+                // 실패 처리
+                updateScore(-50);
+                feedback.textContent = `실패! 폭탄이 터졌어! (-50점) 💥 정답: ${target}`;
+                feedback.style.color = '#c0392b';
+                input.classList.add('shake');
+                container.classList.add('fail-effect');
+                setTimeout(() => {
+                    input.classList.remove('shake');
+                    container.classList.remove('fail-effect');
+                }, 800);
+                currentWordIndex++;
+                setTimeout(showNextWord, 1500);
+            }
+        }
+    }
+
+    function updateScore(points) {
+        currentScore += points;
+        if (currentScore < 0) currentScore = 0;
+        document.getElementById('score').textContent = currentScore;
+    }
+
+</script>
+
+</body>
+</html>
