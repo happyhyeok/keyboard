@@ -9,7 +9,7 @@
 
         body {
             font-family: 'Jua', sans-serif;
-            background-color: #FFF9C4; /* 밝은 노란색 배경 */
+            background-color: #FFF9C4;
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -21,28 +21,30 @@
         h1 {
             font-size: 3.5rem;
             color: #ff6f00;
-            margin-bottom: 50px;
+            margin-bottom: 40px;
             text-shadow: 3px 3px 0px #fff;
             animation: bounce 2s infinite;
+            text-align: center;
         }
 
         .menu-container {
             display: flex;
-            gap: 30px;
+            gap: 25px;
             flex-wrap: wrap;
             justify-content: center;
-            max-width: 1200px;
+            max-width: 1400px;
+            padding: 20px;
         }
 
         .card {
-            width: 320px;
-            height: 420px;
+            width: 300px;
+            height: 400px;
             background: white;
             border-radius: 30px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
             cursor: pointer;
             transition: transform 0.3s, box-shadow 0.3s;
-            text-decoration: none; /* 링크 밑줄 제거 */
+            text-decoration: none;
             color: #333;
             display: flex;
             flex-direction: column;
@@ -58,58 +60,56 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
 
-        .icon {
-            font-size: 5rem;
-            margin-bottom: 20px;
-        }
-
-        h2 {
-            font-size: 2rem;
-            margin: 0;
-            margin-bottom: 10px;
-        }
-
+        .icon { font-size: 4.5rem; margin-bottom: 15px; }
+        h2 { font-size: 1.8rem; margin: 0 0 10px; }
         .desc {
             font-size: 1.1rem;
             color: #777;
             margin-top: 5px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             text-align: center;
-            padding: 0 20px;
-            line-height: 1.5;
+            padding: 0 15px;
+            line-height: 1.4;
         }
 
         .btn-label {
-            padding: 12px 30px;
+            padding: 10px 25px;
             border-radius: 50px;
             color: white;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: bold;
         }
 
-        /* 1. sk1.html 스타일 (초록색 테마) */
+        /* 1. sk1.html (초록) */
         .card-1 { border-color: #8bc34a; }
         .card-1:hover { background-color: #f1f8e9; }
         .card-1 h2 { color: #558b2f; }
         .btn-1 { background-color: #8bc34a; box-shadow: 0 4px 0 #558b2f; }
 
-        /* 2. sk2.html 스타일 (파란색 테마) */
+        /* 2. sk2.html (파랑) */
         .card-2 { border-color: #2980b9; }
         .card-2:hover { background-color: #eaf2f8; }
         .card-2 h2 { color: #2980b9; }
         .btn-2 { background-color: #2980b9; box-shadow: 0 4px 0 #1a5276; }
 
-        /* 3. game.html 스타일 (보라색/어두운 테마) */
+        /* 3. game.html (보라) */
         .card-3 { border-color: #673AB7; }
         .card-3:hover { background-color: #ede7f6; }
         .card-3 h2 { color: #673AB7; }
         .btn-3 { background-color: #673AB7; box-shadow: 0 4px 0 #4527a0; }
 
+        /* 4. defenskey.html (검정/우주) */
+        .card-4 { border-color: #2c3e50; background: #34495e; color: white; }
+        .card-4:hover { background-color: #2c3e50; }
+        .card-4 h2 { color: #f1c40f; }
+        .card-4 .desc { color: #bdc3c7; }
+        .btn-4 { background-color: #e74c3c; box-shadow: 0 4px 0 #c0392b; }
+
         .footer-note {
-            margin-top: 50px;
+            margin-top: 40px;
             color: #888;
             font-size: 1rem;
-            background: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.6);
             padding: 10px 20px;
             border-radius: 20px;
         }
@@ -130,7 +130,7 @@
             <h2>랜덤 키보드 모험</h2>
             <p class="desc">
                 단어가 계속 바뀌어요!<br>
-                단계별로 차근차근 연습해봐요.
+                단계별로 차근차근 연습해요.
             </p>
             <div class="btn-label btn-1">출발하기 👉</div>
         </a>
@@ -139,25 +139,35 @@
             <div class="icon">😺</div>
             <h2>특수키 완전 정복</h2>
             <p class="desc">
-                마스코트 고양이와 함께<br>
-                특수키 사용법을 배워요!
+                고양이 대장과 함께<br>
+                Shift, Enter 키를 배워요!
             </p>
             <div class="btn-label btn-2">배우러 가기 👉</div>
         </a>
 
         <a href="game.html" class="card card-3">
             <div class="icon">🏆</div>
-            <h2>명예의 전당</h2>
+            <h2>키보드 탐험대</h2>
             <p class="desc">
-                친구들과 점수 대결!<br>
-                1등에 도전해보세요.
+                5단계 미션을 통과하고<br>
+                명예의 전당에 도전하세요!
             </p>
             <div class="btn-label btn-3">도전하기 🔥</div>
+        </a>
+
+        <a href="defenskey.html" class="card card-4">
+            <div class="icon">🛸</div>
+            <h2>타자 디펜스</h2>
+            <p class="desc">
+                떨어지는 단어를 막아라!<br>
+                박진감 넘치는 우주 전쟁
+            </p>
+            <div class="btn-label btn-4">지구 지키기 🛡️</div>
         </a>
     </div>
 
     <div class="footer-note">
-        📢 <b>선생님/부모님 필독:</b> 위 3개의 파일(sk1.html, sk2.html, game.html)이 이 파일과 <b>같은 폴더</b>에 있어야 작동합니다.
+        📢 <b>선생님/부모님 필독:</b> 모든 파일(sk1, sk2, game, defenskey)이 같은 폴더에 있어야 작동합니다.
     </div>
 
 </body>

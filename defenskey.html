@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>키보드 디펜스 - 온라인 랭킹</title>
+    <!-- Firebase SDK 로드 -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Nanum+Gothic:wght@800&display=swap');
+
+        :root {
+            --bg-color: #0b0e14;
+            --ko-color: #3498db;
+            --en-color: #9b59b6;
+            --shift-color: #e74c3c;
+        }
+
+        body { margin: 0; overflow: hidden; background-color: var(--bg-color); font-family: 'Nanum Gothic', sans-serif; color: white; }
+        #game-container { position: relative; width: 100vw; height: 100vh; }
+        canvas { display: block; }
+        #hidden-input { position: absolute; top: -100px; opacity: 0; }
+
+        .stats { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; font-family: 'Black Han Sans', sans-serif; font-size: 24px; pointer-events: none; z-index: 10; }
+
+        #feedback { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; font-weight: 900; text-align: center; text-shadow: 3px 3px 0 #000; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 100; }
+
+        /* 에너지 바 */
+        #energy-container { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 300px; height: 20px; background: rgba(255,255,255,0.1); border: 3px solid #fff; border-radius: 10px; overflow: hidden; }
+        #energy-bar { width: 0%; height: 100%; background: #f1c40f; box-shadow: 0 0 15px #f1c40f; }
+
+        /* 오버레이 공통 */
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; text-align: center; }
+        
+        button { padding: 15px 40px; font-size: 24px; font-family: 'Black Han Sans', sans-serif; background: #2ecc71; border: none; border-radius: 10px; color: white; cursor: pointer; margin-top: 10px; }
+        input[type="text"] { padding: 10px; font-size: 20px; border-radius: 5px; border: none; margin-bottom: 10px; text-align: center; }
+
+        /* 랭킹판 */
+        #ranking-board { margin-top: 20px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; width: 300px; }
+        .rank-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body onclick="focusInput()">
+<a href="index.html" style="
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    padding: 10px 20px;
+    background: #ffffff;
+    color: #333;
+    text-decoration: none;
+    font-family: 'Jua', sans-serif;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-radius: 15px;
+    border: 3px solid #333;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+    z-index: 9999;
+    cursor: pointer;
+    transition: transform 0.1s;
+" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+    🏠 처음으로
+</a>
+<div id="game-container">
+    <input type="text" id="hidden-input" autocomplete="off">
+    <canvas id="gameCanvas"></canvas>
+    
+    <div class="stats">
+        <div>점수: <span id="score">0</span></div>
+        <div style="color: #ff4d4d;">생명: <span id="lives">5</span></div>
+    </div>
+
+    <div id="feedback"></div>
+    
+    <div id="energy-container">
+        <div id="energy-bar"></div>
+    </div>
+
+    <!-- 시작 화면 -->
+    <div id="start-screen" class="overlay">
+        <h1 style="font-family:'Black Han Sans'; font-size: 60px; color: #3498db; margin: 0;">온라인 타자 디펜스</h1>
+        <p>글자를 정확히 입력하여 최고 점수에 도전하세요!</p>
+        <button onclick="startGame()">게임 시작</button>
+        <div id="ranking-list-start" style="margin-top:20px;">랭킹 로딩 중...</div>
+    </div>
+
+    <!-- 게임 오버 및 랭킹 등록 화면 -->
+    <div id="game-over-screen" class="overlay" style="display: none;">
+        <h1 style="color: #ff4d4d; font-family:'Black Han Sans'; font-size: 50px;">게임 오버!</h1>
+        <p style="font-size: 24px;">최종 점수: <span id="final-score">0</span></p>
+        <div id="save-score-area">
+            <input type="text" id="nickname" placeholder="닉네임 입력 (최대 8자)" maxlength="8"><br>
+            <button onclick="submitScore()">점수 등록하기</button>
+        </div>
+        <div id="ranking-board">
+            <h3 style="margin-top:0;">실시간 TOP 5</h3>
+            <div id="ranking-items"></div>
+        </div>
+        <button onclick="location.reload()" style="background:#777; font-size: 16px;">처음으로</button>
+    </div>
+</div>
+
+<script>
+    // --- Firebase 설정 (본인의 정보로 교체 필수) ---
+    const firebaseConfig = {
+         apiKey: "AIzaSyB-IBVy8LjJW9QiitA1Ddjawan5Gpg5_yE",
+         authDomain: "typing-defense.firebaseapp.com",
+         projectId: "typing-defense",
+         storageBucket: "typing-defense.firebasestorage.app",
+         messagingSenderId: "944861934399",
+         appId: "1:944861934399:web:d5f21b19295a143047198a"
+    };
+    
+    // Firebase 초기화 (설정값이 없을 경우를 대비한 예외 처리)
+    let db;
+    if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+    }
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const hiddenInput = document.getElementById('hidden-input');
+    const scoreElement = document.getElementById('score');
+    const livesElement = document.getElementById('lives');
+    const energyBar = document.getElementById('energy-bar');
+    const feedbackMsg = document.getElementById('feedback');
+
+    let score = 0, lives = 5, energy = 0, gameActive = false;
+    let enemies = [], particles = [], lastSpawn = 0;
+    
+    const BASE_SPEED = 0.5; 
+    let spawnInterval = 3000;
+
+    const SHIFT_MAP = { 'ㄸ':'ㄷ','ㄲ':'ㄱ','ㅃ':'ㅂ','ㅆ':'ㅅ','ㅉ':'ㅈ','!':'1','@':'2','?':'/' };
+    const ENG_TO_KOR_MAP = {'a':'ㅁ','b':'ㅠ','c':'ㅊ','d':'ㅇ','e':'ㄷ','f':'ㄹ','g':'ㅎ','h':'ㅗ','i':'ㅑ','j':'ㅓ','k':'ㅏ','l':'ㅣ','m':'ㅡ','n':'ㅜ','o':'ㅐ','p':'ㅔ','q':'ㅂ','r':'ㄱ','s':'ㄴ','t':'ㅅ','u':'ㅕ','v':'ㅍ','w':'ㅈ','x':'ㅌ','y':'요','z':'ㅋ'};
+
+    function init() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        loadRankings('ranking-list-start');
+    }
+
+    function focusInput() { hiddenInput.focus(); }
+
+    class Enemy {
+        constructor() {
+            this.x = Math.random() * (canvas.width - 200) + 100;
+            this.y = -60;
+            this.speed = BASE_SPEED + (score / 200);
+            this.radius = 45;
+            this.setupType();
+        }
+        setupType() {
+            const r = Math.random();
+            if (r < 0.4) {
+                this.text = "ㄱㄴㄷㄹㅁㅂㅅㅏㅑㅓㅕㅗㅜㅡㅣ".split('')[Math.floor(Math.random()*15)];
+                this.color = '#3498db'; this.label = "한글";
+            } else if (r < 0.75) {
+                this.text = "abcdefghijkmnpqrstuvwxyz".split('')[Math.floor(Math.random()*24)];
+                this.color = '#9b59b6'; this.label = "영어";
+            } else {
+                this.text = "ㄸㄲㅃㅆㅉ!@?".split('')[Math.floor(Math.random()*7)];
+                this.color = '#e74c3c'; this.label = "Shift";
+            }
+        }
+        draw() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.fillStyle = this.color;
+            ctx.beginPath(); ctx.arc(0, 0, this.radius, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = "white"; ctx.lineWidth = 3; ctx.stroke();
+            ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.font = "bold 40px 'Nanum Gothic'"; ctx.fillText(this.text, 0, 0);
+            ctx.font = "12px sans-serif"; ctx.fillText(this.label, 0, 28);
+            ctx.restore();
+        }
+        update() { this.y += this.speed; }
+    }
+
+    // --- 랭킹 시스템 로직 ---
+    async function loadRankings(containerId) {
+        if (!db) return;
+        try {
+            const snapshot = await db.collection('rankings').orderBy('score', 'desc').limit(5).get();
+            let html = '';
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                html += `<div class="rank-item"><span>${data.name}</span><span>${data.score}점</span></div>`;
+            });
+            document.getElementById(containerId).innerHTML = html || '데이터가 없습니다.';
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async function submitScore() {
+        const name = document.getElementById('nickname').value;
+        if (!name) return alert("닉네임을 입력하세요!");
+        if (!db) return alert("Firebase가 설정되지 않았습니다.");
+
+        try {
+            await db.collection('rankings').add({
+                name: name,
+                score: score,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            document.getElementById('save-score-area').innerHTML = "<b>등록 완료!</b>";
+            loadRankings('ranking-items');
+        } catch (e) {
+            alert("등록 실패: " + e.message);
+        }
+    }
+
+    function showHint(msg, color) {
+        feedbackMsg.textContent = msg; feedbackMsg.style.color = color;
+        feedbackMsg.style.opacity = 1;
+        setTimeout(() => feedbackMsg.style.opacity = 0, 1500);
+    }
+
+    hiddenInput.addEventListener('keydown', (e) => {
+        if (!gameActive) return;
+        if (e.key === 'Enter' && energy >= 100) {
+            enemies.forEach(en => score += 10);
+            enemies = []; energy = 0; updateUI(); showHint("필살기!", "#f1c40f");
+            return;
+        }
+        const key = e.key;
+        let found = false;
+        for (let i = 0; i < enemies.length; i++) {
+            if (enemies[i].text === key) {
+                enemies.splice(i, 1); score += 10; energy = Math.min(100, energy + 10);
+                updateUI(); found = true; break;
+            }
+            if (ENG_TO_KOR_MAP[key.toLowerCase()] === enemies[i].text) showHint("한/영 키!", "#2ecc71");
+            if (SHIFT_MAP[enemies[i].text] === key) showHint("Shift 키!", "#ff4d4d");
+        }
+    });
+
+    hiddenInput.addEventListener('input', () => {
+        const val = hiddenInput.value;
+        if (!val) return;
+        for (let i = 0; i < enemies.length; i++) {
+            if (enemies[i].text === val) {
+                enemies.splice(i, 1); score += 10; energy = Math.min(100, energy + 10);
+                updateUI(); break;
+            }
+        }
+        hiddenInput.value = "";
+    });
+
+    function updateUI() {
+        scoreElement.textContent = score; livesElement.textContent = lives;
+        energyBar.style.width = energy + "%";
+    }
+
+    function gameLoop(now) {
+        if (!gameActive) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (now - lastSpawn > spawnInterval) {
+            enemies.push(new Enemy()); lastSpawn = now;
+            spawnInterval = Math.max(800, 3000 - (score * 2));
+        }
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            enemies[i].update(); enemies[i].draw();
+            if (enemies[i].y > canvas.height + 50) {
+                enemies.splice(i, 1); lives--; updateUI();
+                if (lives <= 0) endGame();
+            }
+        }
+        requestAnimationFrame(gameLoop);
+    }
+
+    function startGame() {
+        score = 0; lives = 5; energy = 0; enemies = []; gameActive = true;
+        document.getElementById('start-screen').style.display = 'none';
+        updateUI(); focusInput(); requestAnimationFrame(gameLoop);
+    }
+
+    function endGame() {
+        gameActive = false;
+        document.getElementById('final-score').textContent = score;
+        document.getElementById('game-over-screen').style.display = 'flex';
+        loadRankings('ranking-items');
+    }
+
+    window.addEventListener('resize', init);
+    setInterval(() => { if(gameActive) focusInput(); }, 1000);
+    init();
+</script>
+</body>
+</html>
