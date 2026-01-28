@@ -36,8 +36,21 @@
         button { padding: 15px 40px; font-size: 24px; font-family: 'Black Han Sans', sans-serif; background: #2ecc71; border: none; border-radius: 10px; color: white; cursor: pointer; margin-top: 10px; }
         input[type="text"] { padding: 10px; font-size: 20px; border-radius: 5px; border: none; margin-bottom: 10px; text-align: center; }
 
-        /* 랭킹판 */
-        #ranking-board { margin-top: 20px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; width: 300px; }
+        /* 랭킹판 (수정: 스크롤 추가) */
+        #ranking-board { 
+            margin-top: 20px; 
+            background: rgba(255,255,255,0.1); 
+            padding: 20px; 
+            border-radius: 15px; 
+            width: 300px;
+            /* 10위까지 표시될 때 화면을 넘치지 않게 스크롤 처리 */
+            max-height: 300px; 
+            overflow-y: auto;
+        }
+        /* 스크롤바 디자인 (선택 사항) */
+        #ranking-board::-webkit-scrollbar { width: 8px; }
+        #ranking-board::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
+        
         .rank-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.2); }
     </style>
 </head>
@@ -90,11 +103,13 @@
         <h1 style="color: #ff4d4d; font-family:'Black Han Sans'; font-size: 50px;">게임 오버!</h1>
         <p style="font-size: 24px;">최종 점수: <span id="final-score">0</span></p>
         <div id="save-score-area">
+            <!-- 닉네임 입력 시 포커스가 풀리지 않도록 이벤트 버블링 방지(선택적)는 JS focusInput 수정으로 해결됨 -->
             <input type="text" id="nickname" placeholder="닉네임 입력 (최대 8자)" maxlength="8"><br>
             <button onclick="submitScore()">점수 등록하기</button>
         </div>
         <div id="ranking-board">
-            <h3 style="margin-top:0;">실시간 TOP 5</h3>
+            <!-- 수정: TOP 10으로 변경 -->
+            <h3 style="margin-top:0;">실시간 TOP 10</h3>
             <div id="ranking-items"></div>
         </div>
         <button onclick="location.reload()" style="background:#777; font-size: 16px;">처음으로</button>
@@ -112,7 +127,7 @@
          appId: "1:944861934399:web:d5f21b19295a143047198a"
     };
     
-    // Firebase 초기화 (설정값이 없을 경우를 대비한 예외 처리)
+    // Firebase 초기화
     let db;
     if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
         firebase.initializeApp(firebaseConfig);
@@ -142,7 +157,14 @@
         loadRankings('ranking-list-start');
     }
 
-    function focusInput() { hiddenInput.focus(); }
+    // [수정] 포커스 강제 함수
+    // 게임이 진행 중일 때만 히든 인풋으로 포커스를 이동시켜 
+    // 게임 오버 후 닉네임 입력 시 방해받지 않게 함
+    function focusInput() { 
+        if (gameActive) {
+            hiddenInput.focus(); 
+        }
+    }
 
     class Enemy {
         constructor() {
@@ -183,11 +205,17 @@
     async function loadRankings(containerId) {
         if (!db) return;
         try {
-            const snapshot = await db.collection('rankings').orderBy('score', 'desc').limit(5).get();
+            // [수정] limit(5) -> limit(10)으로 변경하여 10위까지 가져옴
+            const snapshot = await db.collection('rankings').orderBy('score', 'desc').limit(10).get();
             let html = '';
+            let rank = 1;
             snapshot.forEach(doc => {
                 const data = doc.data();
-                html += `<div class="rank-item"><span>${data.name}</span><span>${data.score}점</span></div>`;
+                html += `<div class="rank-item">
+                            <span>${rank}. ${data.name}</span>
+                            <span>${data.score}점</span>
+                         </div>`;
+                rank++;
             });
             document.getElementById(containerId).innerHTML = html || '데이터가 없습니다.';
         } catch (e) {
@@ -275,17 +303,20 @@
     function startGame() {
         score = 0; lives = 5; energy = 0; enemies = []; gameActive = true;
         document.getElementById('start-screen').style.display = 'none';
-        updateUI(); focusInput(); requestAnimationFrame(gameLoop);
+        updateUI(); 
+        focusInput(); // 게임 시작 시 강제 포커스 (gameActive가 true이므로 작동함)
+        requestAnimationFrame(gameLoop);
     }
 
     function endGame() {
-        gameActive = false;
+        gameActive = false; // 이제 focusInput()이 작동하지 않음
         document.getElementById('final-score').textContent = score;
         document.getElementById('game-over-screen').style.display = 'flex';
         loadRankings('ranking-items');
     }
 
     window.addEventListener('resize', init);
+    // gameActive 상태일 때만 포커스 재설정 시도
     setInterval(() => { if(gameActive) focusInput(); }, 1000);
     init();
 </script>
